@@ -1,9 +1,9 @@
 package com.lazzy.server;
 
+import com.lazzy.server.handler.BInboundHandler;
 import com.lazzy.server.handler.ClientManagerHandler;
 import com.lazzy.server.handler.HeartbeatHandler;
-import com.lazzy.server.handler.LogInHandler;
-import com.lazzy.server.handler.ReplyHandler;
+import com.lazzy.server.handler.AInboundHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadFactory;
 public class ServerLauncher {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
         int port = 8000;
         int nWorkers = 10;
@@ -62,15 +62,29 @@ public class ServerLauncher {
                         pipeline.addLast(new StringDecoder())
                                 .addLast(new StringEncoder())
                                 .addLast(new IdleStateHandler(10, 0, 0))
-                                .addLast(new LogInHandler())
                                 .addLast(new HeartbeatHandler())
-                                .addLast(new ReplyHandler())
+                                .addLast(new AInboundHandler())
+                                .addLast(new BInboundHandler())
                                 .addLast(new ClientManagerHandler());
 
                     }
                 });
 
-        ChannelFuture channelFuture = bootstrap.bind(port).syncUninterruptibly();
+        ChannelFuture channelFuture = bootstrap.bind(port).sync();
+        channelFuture.addListener(future -> {
+            if (future.isSuccess()) {
+                log.info("服务启动成功 port:{}", port);
+            } else {
+                Throwable cause = future.cause();
+                if (cause == null) {
+                    log.error("服务启动失败");
+                } else {
+                    log.error("服务启动失败", cause);
+                }
+            }
+        });
+
+        channelFuture = channelFuture.channel().closeFuture().sync();
 
 //        while (true) {
 //            Vector<Channel> channels = ChannelManager.getChannels();

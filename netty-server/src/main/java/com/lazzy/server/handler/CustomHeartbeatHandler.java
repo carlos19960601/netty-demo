@@ -30,7 +30,7 @@ public abstract class CustomHeartbeatHandler extends SimpleChannelInboundHandler
     private void sendPongMsg(ChannelHandlerContext context) {
         context.channel().writeAndFlush("pong");
         heartbeatCount++;
-        log.info("sent pong msg to {}, count: {}", context.channel().remoteAddress(), heartbeatCount);
+//        log.info("sent pong msg to {}, count: {}", context.channel().remoteAddress(), heartbeatCount);
     }
 
     @Override

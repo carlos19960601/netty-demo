@@ -29,4 +29,10 @@ public class ClientManagerHandler extends ChannelInboundHandlerAdapter {
         ctx.fireChannelInactive();
     }
 
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        log.info("AInboundHandler channelReadComplete");
+        ctx.fireChannelReadComplete();
+    }
+
 }

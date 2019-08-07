@@ -1,15 +1,12 @@
 package com.lazzy.client;
 
-import com.lazzy.client.handler.CustomHeartbeatHandler;
 import com.lazzy.client.handler.EchoClientHandler;
 import com.lazzy.client.handler.HeartbeatHandler;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -22,7 +19,7 @@ import java.util.concurrent.locks.LockSupport;
 @Slf4j
 public class ClientLauncher {
 
-    private NioEventLoopGroup workGroup = new NioEventLoopGroup(4);
+    private NioEventLoopGroup worker;
     private Channel channel;
     private Bootstrap bootstrap;
     private int port = 8000;
@@ -31,8 +28,7 @@ public class ClientLauncher {
     public void start() {
         try {
             bootstrap = new Bootstrap();
-
-            EventLoopGroup worker = new NioEventLoopGroup();
+            worker = new NioEventLoopGroup(4);
             bootstrap.group(worker)
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.SO_KEEPALIVE, true)
@@ -88,7 +84,7 @@ public class ClientLauncher {
         while (count > 0) {
             int index = random.nextInt(3);
             channel.writeAndFlush(names[index]);
-            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(5));
+            LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
             count--;
         }
     }
